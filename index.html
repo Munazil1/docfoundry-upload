@@ -3,73 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DocFoundry Upload</title>
+  <title>DocFoundry Upload Form</title>
   <style>
     body {
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 80px;
+      margin: 40px;
+      background: #f8f8f8;
     }
-    input, button {
-      margin: 10px;
-      padding: 12px;
-      font-size: 1rem;
+    .form-container {
+      background: #fff;
+      padding: 24px;
+      max-width: 500px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
-    .success {
-      color: green;
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: bold;
     }
-    .error {
-      color: red;
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      background: #3b82f6;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h2>Upload Document to DocFoundry</h2>
 
+<div class="form-container">
+  <h2>Upload a Document</h2>
   <form id="uploadForm">
-    <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg,.pdf" required />
-    <br />
+    <label for="docType">Select Document Type:</label>
+    <select id="docType" name="docType" required>
+      <option value="">-- Choose a type --</option>
+      <option value="passport">Passport</option>
+      <option value="id">National ID</option>
+      <option value="invoice">Invoice</option>
+      <option value="contract">Contract</option>
+      <option value="other">Other</option>
+    </select>
+
+    <label for="file">Upload File:</label>
+    <input type="file" id="file" name="file" accept="image/*,.pdf" required />
+
     <button type="submit">Upload</button>
   </form>
+</div>
 
-  <p id="responseMessage"></p>
+<script>
+  const webhookUrl = "https://pmitsdubai.app.n8n.cloud/webhook-test/docfoundry-upload"; // Replace with your n8n Webhook URL
 
-  <script>
-    const form = document.getElementById('uploadForm');
-    const message = document.getElementById('responseMessage');
+  document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("file", document.getElementById("file").files[0]);
+    formData.append("docType", document.getElementById("docType").value);
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const fileInput = document.getElementById('fileInput');
-      const file = fileInput.files[0];
-
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const res = await fetch('https://pmitsdubai.app.n8n.cloud/webhook-test/docfoundry-upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (res.ok) {
-          message.textContent = "✅ Upload successful!";
-          message.className = "success";
-        } else {
-          const errText = await res.text();
-          message.textContent = `❌ Error: ${res.status} - ${errText}`;
-          message.className = "error";
-        }
-      } catch (err) {
-        message.textContent = `❌ Request failed: ${err.message}`;
-        message.className = "error";
-      }
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      body: formData
     });
-  </script>
+
+    if (response.ok) {
+      alert("File uploaded successfully!");
+    } else {
+      alert("Upload failed.");
+    }
+  });
+</script>
+
 </body>
 </html>
