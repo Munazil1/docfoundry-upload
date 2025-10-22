@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DocFoundry Upload</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 80px;
+    }
+    input, button {
+      margin: 10px;
+      padding: 12px;
+      font-size: 1rem;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload Document to DocFoundry</h2>
+
+  <form id="uploadForm">
+    <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg,.pdf" required />
+    <br />
+    <button type="submit">Upload</button>
+  </form>
+
+  <p id="responseMessage"></p>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const message = document.getElementById('responseMessage');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('https://pmitsdubai.app.n8n.cloud/webhook-test/docfoundry-upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          message.textContent = "✅ Upload successful!";
+          message.className = "success";
+        } else {
+          const errText = await res.text();
+          message.textContent = `❌ Error: ${res.status} - ${errText}`;
+          message.className = "error";
+        }
+      } catch (err) {
+        message.textContent = `❌ Request failed: ${err.message}`;
+        message.className = "error";
+      }
+    });
+  </script>
+</body>
+</html>
